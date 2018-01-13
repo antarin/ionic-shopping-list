@@ -1,7 +1,12 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>Bevásárló lista</ion-title>
+    <ion-buttons start>
+      <button ion-button icon-only menuToggle>
+        <ion-icon name="menu"></ion-icon>
+      </button>
+    </ion-buttons>
+    <ion-title text-center>Bevásárló lista</ion-title>
   </ion-navbar>
 
 </ion-header>
@@ -34,11 +39,12 @@
       type="submit"
       block
       [disabled]="!f.valid"
-    >Hozzáad</button>
+    >Hozzáad
+    </button>
   </form>
   <ion-list>
     <ion-item *ngFor="let item of listItems; let i = index" (click)="onItemClick(i)">
-      <h3>{{  item.name }} ({{ item.amount }})</h3>
+      <h3>{{ item.name }} ({{ item.amount }})</h3>
     </ion-item>
   </ion-list>
 </ion-content>

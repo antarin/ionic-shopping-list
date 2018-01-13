@@ -1,25 +1,45 @@
-import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import {Component, OnInit} from '@angular/core';
+import {NavController, NavParams} from "ionic-angular";
+import {Recipe} from "../../models/recipe";
+import {EditRecipePage} from "../edit-recipe/edit-recipe";
+import {ShoppingService} from "../../services/shopping";
+import {RecipesService} from "../../services/recipes";
+import {ShoppingListPage} from "../shopping-list/shopping-list";
 
-/**
- * Generated class for the RecipePage page.
- *
- * See https://ionicframework.com/docs/components/#navigation for more info on
- * Ionic pages and navigation.
- */
-
-@IonicPage()
 @Component({
   selector: 'page-recipe',
   templateUrl: 'recipe.html',
 })
-export class RecipePage {
+export class RecipePage implements OnInit {
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
+  recipe: Recipe;
+  index: number;
+  shoppingPage = ShoppingListPage;
+
+  constructor(private navParams: NavParams,
+              private navCtrl: NavController,
+              private slService: ShoppingService,
+              private recipeService: RecipesService) {
   }
 
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad RecipePage');
+
+  ngOnInit() {
+    this.recipe = this.navParams.get('recipe');
+    this.index = this.navParams.get('index');
+  }
+
+  onEditRecipe() {
+    this.navCtrl.push(EditRecipePage, {mode: 'Szerkesztés', recipe: this.recipe, index: this.index});
+  }
+
+  onAddIngredients() {
+    this.slService.addItemsToList(this.recipe.ingredients);
+  }
+
+  onDeleteRecipe() {
+    this.recipeService.removeRecipe(this.index);
+    this.navCtrl.popToRoot();
+
   }
 
 }

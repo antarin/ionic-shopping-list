@@ -1,6 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {ActionSheetController, AlertController, NavParams, ToastController} from "ionic-angular";
+import {ActionSheetController, AlertController, NavController, NavParams, ToastController} from "ionic-angular";
 import {FormControl, FormGroup, Validators, FormArray} from "@angular/forms";
+import {RecipesService} from "../../services/recipes";
+import {Recipe} from "../../models/recipe";
 
 
 @Component({
@@ -12,19 +14,40 @@ export class EditRecipePage implements OnInit {
   private mode = 'Új';
   selectOptions = ['Könnyű', 'Közepes', 'Nehéz'];
   recipeForm: FormGroup;
+  recipe: Recipe;
+  index: number;
 
   constructor(private navParams: NavParams,
               private aSCtrl: ActionSheetController,
               private alertCtrl: AlertController,
-              private toastCtrl: ToastController) {}
+              private toastCtrl: ToastController,
+              private recipesService: RecipesService,
+              private navCtrl: NavController) {}
 
   ngOnInit() {
     this.mode = this.navParams.get('mode');
+    if (this.mode == 'Szerkesztés') {
+      this.recipe = this.navParams.get('recipe');
+      this.index = this.navParams.get('index');
+    }
     this.initializeForm();
   }
 
   onSubmit() {
-    console.log(this.recipeForm);
+    const value = this.recipeForm.value;
+    let ingredients = [];
+    if (value.ingredients.length > 0) {
+      ingredients = value.ingredients.map( name => {
+        return {name: name, amount: 1};
+      });
+    }
+    if (this.mode == 'Szerkesztés') {
+      this.recipesService.updateRecipe(this.index, value.title, value.description, value.difficulty, ingredients);
+    } else {
+      this.recipesService.addRecipe(value.title, value.description, value.difficulty, ingredients);
+    }
+    this.recipeForm.reset();
+    this.navCtrl.popToRoot();
   }
 
   onManageIngredients() {
@@ -106,11 +129,26 @@ export class EditRecipePage implements OnInit {
   }
 
   private initializeForm() {
+
+    let title = null;
+    let description = null;
+    let difficulty = 'Közepes';
+    let ingredients = [];
+
+    if (this.mode == 'Szerkesztés') {
+      title = this.recipe.title;
+      description = this.recipe.description;
+      difficulty = this.recipe.difficulty;
+      for (let ingredient of this.recipe.ingredients) {
+        ingredients.push(new FormControl(ingredient.name, Validators.required));
+      }
+    }
+
     this.recipeForm = new FormGroup({
-      'title': new FormControl(null, Validators.required),
-      'description': new FormControl(null, Validators.required),
-      'difficulty': new FormControl('Közepes', Validators.required),
-      'ingredients': new FormArray([])
+      'title': new FormControl(title, Validators.required),
+      'description': new FormControl(description, Validators.required),
+      'difficulty': new FormControl(difficulty, Validators.required),
+      'ingredients': new FormArray(ingredients)
     });
   }
 
